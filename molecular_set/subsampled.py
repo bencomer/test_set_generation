@@ -2,6 +2,7 @@ from ase.build import molecule
 from ase.units import Bohr
 from ase.atom import Atom
 from ase.visualize import view
+from ase.io import read
 from pymatgen.io.ase import AseAtomsAdaptor
 from pymatgen.core import Structure
 from lammps_interface.tools import make_box_of_molecules
@@ -21,7 +22,9 @@ def add_to_dict(structure, name=None):
     sparc_p = sprc_params.copy()
     esp_p = esp_params.copy()
     abinit_p = abinit_params.copy()
-    if 'nanodot' in formula or formula in ['CO', 'SO2']:
+    if 'O' in formula:
+        print('yeet')
+    if 'nanodot' in formula or formula in ['O2', 'SO2']:
         sparc_p['EXCHANGE_CORRELATION'] = 'GGA_PBE'
         abinit_p['xc'] = 'PBE'
         esp_p['xc'] = 'PBE'
@@ -115,7 +118,7 @@ boring_list = ['methylenecyclopropane', 'isobutene', 'CH2NHCH2', 'CH2_s3B1d',
                'H2O', 'SiF4', 'HOCl', 'Cl2', 'HCCL3', 'CS2', 'PH3', 'CF4', 'CF2',
                'H2C', 'ClF','Cl2', 'CSO', 'CF2', 'CS','HC', 'NO','BCl3','H2O2',
                'H3CCl','HCl', 'H2CO2', 'HCCl3','H2O2','HC','SiH6C', 'N2O', 'HClO',
-               'OCS', 'CH3SiH3', 'ClF3', 'C2F4']
+               'OCS', 'CH3SiH3', 'ClF3', 'C2F4', 'CO', 'NH3',]
 
 molecule_list = []
 mol_names = []
@@ -146,6 +149,37 @@ for mol in g2.names:
         struct.add_site_property('magmom', atoms.get_initial_magnetic_moments())
     add_to_dict(struct)
     molecule_list.append(atoms)
+
+# random molecules to add more elements
+atoms = read('Xe.sdf')
+atoms.set_cell([10,10,10])
+for index in [1,2,3,4]:
+    atoms.set_distance(0, index, 1.96, fix=0)
+atoms.center()
+
+struct = AseAtomsAdaptor.get_structure(atoms)
+add_to_dict(struct)
+
+atoms = molecule('HF')
+for atom in atoms:
+    if atom.symbol == 'F':
+        atom.symbol = 'Br'
+
+atoms.set_distance(0, 1, 1.43)
+atoms.set_cell([10,10,10])
+atoms.center()
+
+struct = AseAtomsAdaptor.get_structure(atoms)
+add_to_dict(struct)
+
+atoms = pubchem_atoms_search(cid=807)  # I2
+
+atoms.set_cell([10,10,10])
+atoms.center()
+
+struct = AseAtomsAdaptor.get_structure(atoms)
+add_to_dict(struct, 'I2')
+
 
 
 # nano-particles

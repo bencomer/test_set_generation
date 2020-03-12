@@ -36,7 +36,7 @@ for entry, value in surfaces_params.items():
     MD_params[entry] = value
 
 
-for mol in ['H2', 'CO', 'HCN', 'H3C2']:
+for mol in ['H2', 'I2', 'HCN', 'H3C2']:
     relaxations_set[mol + '_molecule'] = molecular[mol + '_molecule']
     relaxations_set_params[mol + '_molecule'] = molecular_params[mol + '_molecule']
     relaxations_set_params[mol + '_molecule']['sparc']['RELAX_FLAG'] = 1
@@ -63,7 +63,7 @@ for bulk in ['WC', 'RhS2', 'CaO']:
     relaxations_set_params[bulk + '_bulk']['espresso']['ion_dynamics'] = 'bfgs'
 
 
-for surface in ['Zn_100', 'ScO_100', 'Si_110']:
+for surface in ['Zn_100', 'MnP_111', 'Si_111']:
     relaxations_set[surface + '_surface'] = surfaces[surface + '_surface']
     relaxations_set_params[surface + '_surface'] = surfaces_params[surface + '_surface']
     relaxations_set_params[surface + '_surface']['sparc']['RELAX_FLAG'] = 1

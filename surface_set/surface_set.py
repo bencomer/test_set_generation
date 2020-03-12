@@ -40,6 +40,7 @@ def find_shift_abinit(kpts):
     shift = ' 0 0 0'
     return shift
 
+
 def add_to_dict(structure, element, miller_index):
     # formula = structure.composition.reduced_formula
     miller_index_str = ''
@@ -56,11 +57,13 @@ def add_to_dict(structure, element, miller_index):
     esp_p = esp_params.copy()
     abinit_p = abinit_params.copy()
     syms =structure.symbol_set
-    if 'O' in syms:
-        if element not in ['Ru_NOads', 'Cu_COads', 'TiO2_defect']:
-            sparc_p['EXCHANGE_CORRELATION'] = 'GGA_PBE'
-            abinit_p['ixc'] = 11
-            esp_p['xc'] = 'PBE'
+    if 'O' in syms or 'S' in syms or 'P' in syms or 'C' in syms or 'Ga' in syms:
+        if 'O' in syms:
+            print('yeet')
+        #if element not in ['Ru_NOads', 'Cu_COads', 'TiO2_defect']:
+        sparc_p['EXCHANGE_CORRELATION'] = 'GGA_PBE'
+        abinit_p['ixc'] = 11
+        esp_p['xc'] = 'PBE'
     sparc_p['KPOINT_GRID'] = kpts
     esp_p['kpts'] = kpts
     abinit_p['kptopt'] = 1
@@ -148,9 +151,33 @@ for metal in metals:
     struc_l = struc_l[0]
     struct = rest.get_structure_by_material_id(struc_l.entry_id)
     atoms = AseAtomsAdaptor.get_atoms(struct) # switch to ASE
-    for millers in [(1,1,1), (1,1,0), (1,0,0)]:
+    for millers in [(1,1,1)]:
         slab = surface(atoms, millers, 4, vacuum=6)
         slab *= (2,2,1)
+        n_metal = metal
+        if millers == (1,1,1):
+            if metal == 'Cu':
+                add_adsorbate(slab, molecule('CO'), 2.5, (0, 1.64))
+                n_metal += '_COads'
+
+        structure = AseAtomsAdaptor.get_structure(slab)
+        add_to_dict(structure, n_metal, millers)
+
+
+
+metals = ['In', 'Rb', 'Sr', 'Te']
+
+for metal in metals:
+    struc_l = rest.get_entries(metal, sort_by_e_above_hull=True)
+    struc_l = struc_l[0]
+    struct = rest.get_structure_by_material_id(struc_l.entry_id)
+    atoms = AseAtomsAdaptor.get_atoms(struct) # switch to ASE
+    for millers in [(1,0,0)]:
+        if metal not in ['Rb']:
+            slab = surface(atoms, millers, 2, vacuum=6)
+            slab *= (2,2,1)
+        else:
+            slab = surface(atoms, millers, 1, vacuum=6)
         n_metal = metal
         if millers == (1,1,1):
             if metal == 'Cu':
@@ -168,10 +195,44 @@ for metal in metals:
                 del slab[10]
                 print(len(slab))
                 n_metal += '_defect'
-
         structure = AseAtomsAdaptor.get_structure(slab)
         add_to_dict(structure, n_metal, millers)
 
+metals = ['Tc', 'Ga', 'Ba', 'Cs']
+
+for metal in metals:
+    struc_l = rest.get_entries(metal, sort_by_e_above_hull=True)
+    struc_l = struc_l[0]
+    struct = rest.get_structure_by_material_id(struc_l.entry_id)
+    atoms = AseAtomsAdaptor.get_atoms(struct) # switch to ASE
+    for millers in [(1,1,0)]:
+        if metal not in ['Cs', 'Ga']:
+            slab = surface(atoms, millers, 4, vacuum=6)
+            slab *= (2,2,1)
+        elif metal == 'Ga':
+            slab = surface(atoms, millers, 2, vacuum=6)
+            slab *= (2,2,1)
+        else:
+            slab = surface(atoms, millers, 1, vacuum=6)
+        n_metal = metal
+        if millers == (1,1,1):
+            if metal == 'Cu':
+                add_adsorbate(slab, molecule('CO'), 2.5, (0, 1.64))
+                n_metal += '_COads'
+        if millers == (1,0,0):
+            if metal == 'Fe':
+                add_adsorbate(slab, molecule('O2'), 2.8, (0.411, 2.3255))
+                n_metal += '_O2ads'
+            if metal == 'Ru':
+                add_adsorbate(slab, molecule('NO'), 1.5, (2.739, 3.219))
+                n_metal += '_NOads'
+            if metal == 'Cu':
+                slab *= (2,2,1)
+                del slab[10]
+                print(len(slab))
+                n_metal += '_defect'
+        structure = AseAtomsAdaptor.get_structure(slab)
+        add_to_dict(structure, n_metal, millers)
 
 # Si
 
@@ -181,7 +242,7 @@ struct = rest.get_structure_by_material_id(struc_l.entry_id)
 
 atoms = AseAtomsAdaptor.get_atoms(struct) # switch to ASE
 
-for millers in [(1,1,1), (1,1,0)]:
+for millers in [(1,1,1)]:
     slab = surfaces_with_termination(atoms, millers, 3, vacuum=6)[0]
     structure = AseAtomsAdaptor.get_structure(slab)
     add_to_dict(structure, 'Si', millers)
@@ -232,6 +293,19 @@ for millers in [(0,0,1)]:
     add_to_dict(structure, 'graphite', millers)
 
 
+# potassium mercury almalgum
+
+material = ['mp-11462']
+name = ['KHg']
+
+bulk = rest.get_structure_by_material_id('mp-11462')
+bulk = AseAtomsAdaptor.get_atoms(bulk)
+# correct spacing between layers
+for millers in [(1,0,0)]:
+    slab = surfaces_with_termination(bulk, millers, 2, vacuum=6)[0]
+    structure = AseAtomsAdaptor.get_structure(slab)
+    add_to_dict(structure, 'KHg', millers)
+
 
 # TiC
 
@@ -241,7 +315,7 @@ name = ['TiC']
 bulk = rest.get_structure_by_material_id('mp-631')
 bulk = AseAtomsAdaptor.get_atoms(bulk)
 # correct spacing between layers
-for millers in [(1,0,0), (1,1,0), (1,1,1)]:
+for millers in [(1,1,0)]:
     slab = surfaces_with_termination(bulk, millers, 4, vacuum=6)[0]
     slab *= (2,2,1)
     structure = AseAtomsAdaptor.get_structure(slab)
@@ -272,9 +346,6 @@ name = ['KCl']
 bulk = rest.get_structure_by_material_id('mp-23193')
 bulk = AseAtomsAdaptor.get_atoms(bulk)
 # correct spacing between layers
-new_cell = bulk.get_cell()  * np.array([1,1,0.85853])
-bulk.set_cell(new_cell,
-              scale_atoms=True)
 for millers in [(1,0,0), (1,1,0), (1,1,1)]:
     slab = surfaces_with_termination(bulk, millers, 3, vacuum=6)[0]
     slab *= (2,2,1)
@@ -282,6 +353,7 @@ for millers in [(1,0,0), (1,1,0), (1,1,1)]:
     add_to_dict(structure, 'KCl', millers)
 """
 
+"""
 material = ['mp-644481']
 name = ['ScO']
 
@@ -289,12 +361,25 @@ bulk = rest.get_structure_by_material_id('mp-644481')
 bulk = AseAtomsAdaptor.get_atoms(bulk)
 # correct spacing between layers
 
-for millers, t in zip([(1,0,0), (1,1,0), (1,1,1)], (0,0,0)):
+for millers, t in zip([(1,1,1)], (0,0,0)):
     slab = surfaces_with_termination(bulk, millers, 3, vacuum=6)[t]
     #slab *= (2,2,1)
     structure = AseAtomsAdaptor.get_structure(slab)
     add_to_dict(structure, 'ScO', millers)
+"""
 
+material = ['mp-1279']
+name = ['TaN']
+
+bulk = rest.get_structure_by_material_id('mp-1279')
+bulk = AseAtomsAdaptor.get_atoms(bulk)
+# correct spacing between layers
+
+for millers in [(1,1,0)]:
+    slab = surfaces_with_termination(bulk, millers, 3, vacuum=6)[0]
+    #slab *= (2,2,1)
+    structure = AseAtomsAdaptor.get_structure(slab)
+    add_to_dict(structure, 'TaN', millers)
 
 
 # Iron Oxide
@@ -375,7 +460,7 @@ for name, element, lattice in zip(names, metals, lattice_constants):
 # more oxides
 
 # ZnO
-
+"""
 material = ['mp-2133']
 name = ['ZnO']
 
@@ -387,8 +472,58 @@ for millers in [(1,1,0), (1,0,0)]:
     slab = surfaces_with_termination(bulk, millers, 4, vacuum=6)[0]
     structure = AseAtomsAdaptor.get_structure(slab)
     add_to_dict(structure, 'ZnO', millers)
+"""
 
-# Zn
+material = ['mp-1007776']
+name = ['TlP']
+
+bulk = rest.get_structure_by_material_id('mp-1007776') 
+bulk = AseAtomsAdaptor.get_atoms(bulk)
+#bulk.positions += np.array([1,1,1]) * 0.5
+# this next function is bugged, future versions of ASE might not recreat this stucture
+for millers in [(1,1,0)]:
+    slab = surfaces_with_termination(bulk, millers, 4, vacuum=6)[0]
+    structure = AseAtomsAdaptor.get_structure(slab)
+    add_to_dict(structure, 'TlP', millers)
+
+
+material = ['mp-7586']
+name = ['Ni3C']
+
+bulk = rest.get_structure_by_material_id('mp-7586') 
+bulk = AseAtomsAdaptor.get_atoms(bulk)
+#bulk.positions += np.array([1,1,1]) * 0.5
+# this next function is bugged, future versions of ASE might not recreat this stucture
+for millers in [(1,0,0)]:
+    slab = surfaces_with_termination(bulk, millers, 2, vacuum=6)[0]
+    structure = AseAtomsAdaptor.get_structure(slab)
+    add_to_dict(structure, 'Ni3C', millers)
+
+
+material = ['mp-2662']
+name = ['MnP']
+
+bulk = rest.get_structure_by_material_id('mp-2662') 
+bulk = AseAtomsAdaptor.get_atoms(bulk)
+#bulk.positions += np.array([1,1,1]) * 0.5
+# this next function is bugged, future versions of ASE might not recreat this stucture
+for millers in [(1,1,1)]:
+    slab = surfaces_with_termination(bulk, millers, 2, vacuum=6)[0]
+    structure = AseAtomsAdaptor.get_structure(slab)
+    add_to_dict(structure, 'MnP', millers)
+
+
+material = ['mp-1206445']
+name = ['ReW3']
+
+bulk = rest.get_structure_by_material_id('mp-1206445')
+bulk = AseAtomsAdaptor.get_atoms(bulk)
+#bulk.positions += np.array([1,1,1]) * 0.5
+# this next function is bugged, future versions of ASE might not recreat this stucture
+for millers in [(0,0,1)]:
+    slab = surfaces_with_termination(bulk, millers, 2, vacuum=6)[0]
+    structure = AseAtomsAdaptor.get_structure(slab)
+    add_to_dict(structure, 'ReW3', millers)
 
 
 # Al2O3
@@ -401,10 +536,57 @@ bulk = rest.get_structure_by_material_id('mp-1143') # Al2O3
 bulk = AseAtomsAdaptor.get_atoms(bulk)
 #bulk.positions += np.array([1,1,1]) * 0.5
 # this next function is bugged, future versions of ASE might not recreat this stucture
-for millers, i in zip([(1,1,1), (1,1,0), (1,0,0)], (0,2,0)):
+for millers, i in zip([(1,1,1)], [0]):
     slab = surfaces_with_termination(bulk, millers, 3, vacuum=6, termination='O')[i]
     structure = AseAtomsAdaptor.get_structure(slab)
     add_to_dict(structure, 'Al2O3', millers)
+
+material = ['mp-1226211']
+name = ['FeCr']
+
+bulk = rest.get_structure_by_material_id('mp-1226211')
+bulk = AseAtomsAdaptor.get_atoms(bulk)
+#bulk.positions += np.array([1,1,1]) * 0.5
+# this next function is bugged, future versions of ASE might not recreat this stucture
+for millers, i in zip([(1,0,0)], [0]):
+    slab = surfaces_with_termination(bulk, millers, 3, vacuum=6)[0]
+    structure = AseAtomsAdaptor.get_structure(slab)
+    add_to_dict(structure, 'FeCr', millers)
+
+material = ['mp-30726']
+name = ['YHg']
+
+bulk = rest.get_structure_by_material_id('mp-30726') 
+bulk = AseAtomsAdaptor.get_atoms(bulk)
+#bulk.positions += np.array([1,1,1]) * 0.5
+# this next function is bugged, future versions of ASE might not recreat this stucture
+for millers, i in zip([(1,1,0)], [0]):
+    slab = surfaces_with_termination(bulk, millers, 2, vacuum=6)[0]
+    structure = AseAtomsAdaptor.get_structure(slab)
+    add_to_dict(structure, 'YHg', millers)
+
+
+bulk = rest.get_structure_by_material_id('mp-1008918')
+bulk = AseAtomsAdaptor.get_atoms(bulk)
+#bulk.positions += np.array([1,1,1]) * 0.5
+# this next function is bugged, future versions of ASE might not recreat this stucture
+for millers, i in zip([(1,1,1)], [0]):
+    slab = surfaces_with_termination(bulk, millers, 3, vacuum=6)[0]
+    structure = AseAtomsAdaptor.get_structure(slab)
+    slab *= (2,1,1)
+    add_to_dict(structure, 'CdN', millers)
+
+
+bulk = rest.get_structure_by_material_id('mp-11460')
+bulk = AseAtomsAdaptor.get_atoms(bulk)
+#bulk.positions += np.array([1,1,1]) * 0.5
+# this next function is bugged, future versions of ASE might not recreat this stucture
+for millers, i in zip([(1,0,0)], [0]):
+    slab = surfaces_with_termination(bulk, millers, 3, vacuum=6)[0]
+    structure = AseAtomsAdaptor.get_structure(slab)
+    slab *= (2,1,1)
+    add_to_dict(structure, 'HfTc', millers)
+
 
 
 # 2D materials
@@ -426,7 +608,7 @@ bulk.center()
 structure = AseAtomsAdaptor.get_structure(bulk)
 add_to_dict(structure, 'graphene', millers)
 
-# Iron on Graphene
+# Pt on Graphene
 material = ['mp-48']
 name = ['graphite']
 

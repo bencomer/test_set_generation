@@ -156,8 +156,8 @@ add_to_dict(atoms, 'electrolyte', 273.15 + 23)
 
 # iron interface
 
-atoms = read('interface.traj')
-add_to_dict(atoms, 'iron_interface', 273.15 + 23)
+#atoms = read('interface.traj')
+#add_to_dict(atoms, 'iron_interface', 273.15 + 23)
 
 
 json.dump(structures, open('../../test_set/MD.json', 'w'))

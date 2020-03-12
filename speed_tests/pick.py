@@ -50,8 +50,8 @@ speed_set_params['MoS2_nanotube'] = wires_params['MoS2_nanotube']
 speed_set['Si_nanodot_molecule'] = molecular['Si_nanodot_molecule']
 speed_set_params['Si_nanodot_molecule'] = molecular_params['Si_nanodot_molecule']
 
-speed_set['Cu_defect_100_surface'] = surfaces['Cu_defect_100_surface']
-speed_set_params['Cu_defect_100_surface'] = surfaces_params['Cu_defect_100_surface']
+#speed_set['Cu_defect_100_surface'] = surfaces['Cu_defect_100_surface']
+#speed_set_params['Cu_defect_100_surface'] = surfaces_params['Cu_defect_100_surface']
 
 speed_set['CO2_box_molecule'] = molecular['CO2_box_molecule']
 speed_set_params['CO2_box_molecule'] = molecular_params['CO2_box_molecule']
@@ -73,8 +73,8 @@ speed_set['electrolyte_MD'] = MD['electrolyte_MD']
 speed_set_params['electrolyte_MD'] = MD_params['electrolyte_MD']
 
 
-speed_set['iron_interface_MD'] = MD['iron_interface_MD']
-speed_set_params['iron_interface_MD'] = MD_params['iron_interface_MD']
+#speed_set['iron_interface_MD'] = MD['iron_interface_MD']
+#speed_set_params['iron_interface_MD'] = MD_params['iron_interface_MD']
 
 json.dump(speed_set, open('../../test_set/speed.json', 'w'))
 json.dump(speed_set_params, open('../../test_set/speed_parameters.json', 'w'))
