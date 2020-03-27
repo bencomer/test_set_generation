@@ -3,6 +3,7 @@ from pymatgen import Structure, Lattice, MPRester, Molecule
 from ase.data import chemical_symbols, reference_states
 from ase.build import bulk
 from ase.units import Bohr
+from ase.visualize import view
 from pickle import dump, load
 import numpy as np
 import json
@@ -32,6 +33,7 @@ def find_shift_abinit(kpts):
     shift = ' 0 0 0'
     return shift
 
+num_GGA = 0
 
 def add_to_dict(structure):
     formula = structure.composition.reduced_formula
@@ -47,6 +49,7 @@ def add_to_dict(structure):
     #abinit_p['nshiftk'] = 1
     abinit_p['shiftk'] = find_shift_abinit(kpts)
     syms =structure.symbol_set
+    contains_non_metals = 'O' in syms or 'H' in syms or 'S' in syms or 'N' in syms
     if ('O' in syms or formula == 'PSe') and formula != 'CaO':
         sparc_p['EXCHANGE_CORRELATION'] = 'GGA_PBE'
         abinit_p['xc'] = 'PBE'
@@ -74,7 +77,7 @@ def add_to_dict(structure):
 
 
 sprc_params = {}
-sprc_params['h'] = 0.2 * Bohr
+sprc_params['h'] = 0.4 * Bohr
 sprc_params['MAXIT_SCF'] = 250
 #sprc_params['TOL_SCF_QE'] = 1e-6
 sprc_params['TOL_SCF'] = 5e-5
@@ -91,8 +94,8 @@ sprc_params['KPOINT_SHIFT'] = ' 0 0 0'
 esp_params = dict(
         #xc='PZ',
         kpts=(1, 1, 1), #only need 1 kpt in z-direction
-        pw=1360,
-        dw=13600,
+        pw=300,
+        dw=3000,
         calculation='scf',
         #spinpol=True,
         tstress=True,
@@ -135,8 +138,8 @@ available_psps = [a.split('.')[0] for a in psps]
 
 
 # metals
-metals = ['Pt', 'Sc', 'La', 'Na', 'Au', 'Os', 'V', 'Zn', 'Bi', 'Co']
-sizes = [(4,2,2), (5,4,3), (3,1,1), (3,2,1), (1,1,7), (2,2,2), (2,1,1),(2,2,1), (1,1,1), (2,1,1)]
+metals = ['Pt', 'Sc', 'La', 'Na', 'Au', 'Os', 'V', 'Zn', 'Bi', 'Co', 'Pd']
+sizes = [(4,2,2), (4,3,2), (3,1,1), (3,2,1), (1,1,7), (2,2,2), (2,1,1),(2,2,1), (1,1,1), (2,1,1), (2,2,1)]
 
 for size, metal in zip(sizes, metals):
     struc_l = rest.get_entries(metal, sort_by_e_above_hull=True)
@@ -152,15 +155,15 @@ for size, metal in zip(sizes, metals):
         del struct[35]
         del struct[100]
         #print(len(struct))
-    #if metal == 'Sc':
-        #print(len(struct))
+    if metal == 'Sc':
+        print(len(struct))
     add_to_dict(struct)
 
 # oxides
-oxide_formulas = ['TiO2', 'CaO', 'ZrO2', 'MoO3', 'Pb3O4', 'Cu2O', 'SiO2',
+oxide_formulas = ['CaO', 'ZrO2', 'Pb3O4',
                   'Al2O3', 'Ag2O', 'SnO']
-oxide_mps = ['mp-2657', 'mp-2605', 'mp-2858', 'mp-562561', 'mp-22633', 
-             'mp-361', 'mp-7000', 'mp-1143', 'mp-353', 'mp-2097']
+oxide_mps = ['mp-2605', 'mp-2858', 'mp-22633', 
+             'mp-353', 'mp-2097']
 
 oxide_sizes = [(2,1,2), (1,1,1), (1,2,1), (1,1,1), (1,1,1), (2,2,2), (1,1,1),
                (1,1,1), (1,1,1), (2,1,1)]
@@ -172,12 +175,13 @@ for formula, mp_id, size in zip(oxide_formulas, oxide_mps, oxide_sizes):
 
 
 # Alloys
-alloy_formulas = ['SiGe', 'Al3Sn', 'BeCu', 'PtAu', 'Zn3Cu']
-alloy_mps = ['mp-1094056','mp-1183200', 'mp-2323', 'mp-1219709', 'mp-972042']
+alloy_formulas = ['SiGe', 'Al3Sn', 'BeCu', 'PtAu', 'Zn3Cu', 'IrPt3', 'Mo4Ru', 'SbAs']
+alloy_mps = ['mp-1094056','mp-1183200', 'mp-2323', 'mp-1219709',
+             'mp-972042', 'mp-1184759', 'mp-1221461', 'mp-1219457']
 
 for formula, mp_id in zip(alloy_formulas, alloy_mps):
     struct = rest.get_structure_by_material_id(mp_id)
-
+    atoms = AseAtomsAdaptor.get_atoms(struct)
     add_to_dict(struct)
 
 # Sulfides
@@ -189,11 +193,12 @@ for formula, mp_id in zip(sulfide_formulas, sulfide_mps):
     add_to_dict(struct)
 
 # other
-other_formulas = ['MgS', 'CaN2', 'WC', 'BeF2', 'PSe']
-other_mps = ['mp-1315', 'mp-1009657', 'mp-1894', 'mp-15951', 'mp-28885']
+other_formulas = ['MgS', 'CaN2', 'WC', 'BeF2', 'PSe', 'NbP']
+other_mps = ['mp-1315', 'mp-1009657', 'mp-1894', 'mp-15951', 'mp-28885', 'mp-9339']
 
 for formula, mp_id in zip(other_formulas, other_mps):
     struct = rest.get_structure_by_material_id(mp_id)
+    atoms = AseAtomsAdaptor.get_atoms(struct)
     if formula == 'MgS':
         struct *= (3,3,3)
     add_to_dict(struct)
@@ -207,7 +212,7 @@ for n, s in structures.items():
 #print(([a > 30 for a in lens]).count(True))
 #print(([a > 100 for a in lens]).count(True))
 
-#print(len(structures))
+print(len(structures))
 
 json.dump(structures, open('../../test_set/bulk.json', 'w'))
 json.dump(params_dict, open('../../test_set/bulk_parameters.json', 'w'))

@@ -46,6 +46,8 @@ for mol in ['H2', 'I2', 'HCN', 'H3C2']:
     relaxations_set_params[mol + '_molecule']['espresso']['forc_conv_thr'] = 2.5e-3
     relaxations_set_params[mol + '_molecule']['espresso']['calculation'] = 'relax'
     relaxations_set_params[mol + '_molecule']['espresso']['ion_dynamics'] = 'bfgs'
+    del molecular[mol + '_molecule']
+    del molecular_params[mol + '_molecule']
 
 
 
@@ -61,6 +63,9 @@ for bulk in ['WC', 'RhS2', 'CaO']:
     relaxations_set_params[bulk + '_bulk']['espresso']['forc_conv_thr'] = 2.5e-3
     relaxations_set_params[bulk + '_bulk']['espresso']['calculation'] = 'vc-relax'
     relaxations_set_params[bulk + '_bulk']['espresso']['ion_dynamics'] = 'bfgs'
+    del bulks[bulk + '_bulk']
+    del bulks_params[bulk + '_bulk']
+
 
 
 for surface in ['Zn_100', 'MnP_111', 'Si_111']:
@@ -73,7 +78,24 @@ for surface in ['Zn_100', 'MnP_111', 'Si_111']:
     relaxations_set_params[surface + '_surface']['espresso']['forc_conv_thr'] = 2.5e-3
     relaxations_set_params[surface + '_surface']['espresso']['calculation'] = 'relax'
     relaxations_set_params[surface + '_surface']['espresso']['ion_dynamics'] = 'bfgs'
+    del surfaces[surface + '_surface']
+    del surfaces_params[surface + '_surface']
 
 
 json.dump(relaxations_set, open('../../test_set/relaxation.json', 'w'))
 json.dump(relaxations_set_params, open('../../test_set/relaxation_parameters.json', 'w'))
+
+json.dump(surfaces, open('../../test_set/surface.json', 'w'))
+surfaces_params = json.dump(surfaces_params, open('../../test_set/surface_parameters.json', 'w'))
+
+json.dump(bulks, open('../../test_set/bulk.json', 'w'))
+json.dump(bulks_params, open('../../test_set/bulk_parameters.json', 'w'))
+
+json.dump(wires, open('../../test_set/wire.json', 'w'))
+json.dump(wires_params, open('../../test_set/wire_parameters.json', 'w'))
+
+json.dump(molecular, open('../../test_set/molecular.json', 'w'))
+json.dump(molecular_params, open('../../test_set/molecular_parameters.json', 'w'))
+
+#json.dump(MD, open('../../test_set/MD.json', 'w'))
+#json.dump(MD_params, open('../../test_set/MD_parameters.json', 'w'))

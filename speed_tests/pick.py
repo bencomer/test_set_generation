@@ -69,8 +69,8 @@ speed_set_params['MgS_bulk'] = bulks_params['MgS_bulk']
 
 # 300
 
-speed_set['electrolyte_MD'] = MD['electrolyte_MD']
-speed_set_params['electrolyte_MD'] = MD_params['electrolyte_MD']
+#speed_set['electrolyte_MD'] = MD['electrolyte_MD']
+#speed_set_params['electrolyte_MD'] = MD_params['electrolyte_MD']
 
 
 #speed_set['iron_interface_MD'] = MD['iron_interface_MD']

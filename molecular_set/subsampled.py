@@ -24,7 +24,7 @@ def add_to_dict(structure, name=None):
     abinit_p = abinit_params.copy()
     if 'O' in formula:
         print('yeet')
-    if 'nanodot' in formula or formula in ['O2', 'SO2']:
+    if formula in ['O2', 'SO2']:
         sparc_p['EXCHANGE_CORRELATION'] = 'GGA_PBE'
         abinit_p['xc'] = 'PBE'
         esp_p['xc'] = 'PBE'
@@ -44,6 +44,7 @@ def add_to_dict(structure, name=None):
     if 'box' in formula:
         params_dict[formula+'_molecule']['sparc']['BC'] = [True] * 3
     if formula == 'Pt_cluster':
+        params_dict[formula+'_molecule']['sparc']['MIXING_VARIABLE'] = 'density'
         params_dict[formula+'_molecule']['sparc']['MIXING_PRECOND'] = 'kerker'
     params_dict[formula+'_molecule']['espresso'] = esp_p.copy()
     params_dict[formula+'_molecule']['abinit'] = abinit_p.copy()
@@ -53,7 +54,7 @@ structures = {}
 params_dict = {}
 
 sprc_params = {}
-sprc_params['h'] = 0.2 * Bohr
+sprc_params['h'] = 0.4 * Bohr
 sprc_params['MAXIT_SCF'] = 1000
 #sprc_params['TOL_SCF_QE'] = 1e-6
 sprc_params['TOL_SCF'] = 5e-5
@@ -68,8 +69,8 @@ sprc_params['KPOINT_SHIFT'] = ' 0 0 0'
 
 esp_params = dict(#xc='PZ',
         kpts=(1, 1, 1), #only need 1 kpt in z-direction
-        pw=1360,
-        dw=13600,
+        pw=300,
+        dw=3000,
         #spinpol=True,
         calculation='scf',
         convergence={'energy':1e-6,
@@ -116,9 +117,10 @@ boring_list = ['methylenecyclopropane', 'isobutene', 'CH2NHCH2', 'CH2_s3B1d',
                'C3H7Cl', 'H2CCHCl', 'ClNO', 'C2H6CHOH', 'SiCl4', 'NF3',
                'Si2H6',  'C2H6', 'P2', 'CCl4', 'BF3', 'F2', 'PF3', 'CO2', 'CH4',
                'H2O', 'SiF4', 'HOCl', 'Cl2', 'HCCL3', 'CS2', 'PH3', 'CF4', 'CF2',
-               'H2C', 'ClF','Cl2', 'CSO', 'CF2', 'CS','HC', 'NO','BCl3','H2O2',
+               'H2C', 'ClF','Cl2', 'CSO', 'CF2', 'CS','HC','BCl3','H2O2',
                'H3CCl','HCl', 'H2CO2', 'HCCl3','H2O2','HC','SiH6C', 'N2O', 'HClO',
-               'OCS', 'CH3SiH3', 'ClF3', 'C2F4', 'CO', 'NH3',]
+               'OCS', 'CH3SiH3', 'ClF3', 'C2F4', 'CO', 'NH3', 'C2H2', 'HF', 'H2O2',
+               'SO2', 'C2H4', 'SH2', 'C2H3', 'O2']
 
 molecule_list = []
 mol_names = []
@@ -131,7 +133,7 @@ for mol in g2.names:
         continue
     # remove the spin polarized systems
     if atoms.get_initial_magnetic_moments().any() != 0.:
-        if mol not in ['NO', 'O2', 'OH']:
+        if mol not in ['NO', 'OH']:
             continue
     # capriciously removing systems with Li, Na, and Al:
     for element in ['Li', 'Na', 'Al']:
@@ -259,7 +261,7 @@ water.set_distance(0, 1, 1.0, fix=0)
 water.set_distance(0, 2, 1.0, fix=0)
 atoms = make_box_of_molecules(water, 113, [15] * 3)
 
-add_to_dict(AseAtomsAdaptor.get_structure(atoms), 'water_box')
+#add_to_dict(AseAtomsAdaptor.get_structure(atoms), 'water_box')
 
 # CO2
 
@@ -288,5 +290,6 @@ for n, s in structures.items():
 #print(([a > 100 for a in lens]).count(True))
 #print(len(structures))
 
+print(len(structures))
 json.dump(structures, open('../../test_set/molecular.json', 'w'))
 json.dump(params_dict, open('../../test_set/molecular_parameters.json', 'w'))

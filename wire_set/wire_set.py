@@ -67,7 +67,7 @@ def add_to_dict(structure, name):
 
 
 sprc_params = {}
-sprc_params['h'] = 0.2 * Bohr
+sprc_params['h'] = 0.4 * Bohr
 sprc_params['MAXIT_SCF'] = 1000
 sprc_params['TOL_SCF'] = 5e-5
 #sprc_params['TOL_SCF_QE'] = 1e-6
@@ -83,8 +83,8 @@ sprc_params['KPOINT_SHIFT'] = ' 0 0 0'
 
 esp_params = dict(#xc='PZ',
         kpts=(1, 1, 1), #only need 1 kpt in z-direction
-        pw=1360,
-        dw=13600,
+        pw=300,
+        dw=3000,
         calculation='scf',
         #spinpol=True,
         convergence={'energy':1e-6,

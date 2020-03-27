@@ -62,7 +62,7 @@ def add_to_dict(structure, element, miller_index):
             print('yeet')
         #if element not in ['Ru_NOads', 'Cu_COads', 'TiO2_defect']:
         sparc_p['EXCHANGE_CORRELATION'] = 'GGA_PBE'
-        abinit_p['ixc'] = 11
+        abinit_p['xc'] = 'PBE'
         esp_p['xc'] = 'PBE'
     sparc_p['KPOINT_GRID'] = kpts
     esp_p['kpts'] = kpts
@@ -85,7 +85,7 @@ def add_to_dict(structure, element, miller_index):
 
 
 sprc_params = {}
-sprc_params['h'] = 0.2 * Bohr
+sprc_params['h'] = 0.4 * Bohr
 sprc_params['MAXIT_SCF'] = 1000
 #sprc_params['TOL_SCF_QE'] = 1e-6
 sprc_params['TOL_SCF'] = 5e-5
@@ -100,8 +100,8 @@ sprc_params['KPOINT_SHIFT'] = ' 0 0 0'
 
 esp_params = dict(#xc='PZ',
         kpts=(1, 1, 1), #only need 1 kpt in z-direction
-        pw=1360,
-        dw=13600,
+        pw=300,
+        dw=3000,
         calculation='scf',
         #spinpol=True,
         convergence={'energy':1e-6,
@@ -622,9 +622,9 @@ bulk.set_cell(new_cell)
 bulk *= (3,3,1)
 bulk.center()
 # correct spacing between layers
-add_adsorbate(bulk, 'Pt', 2.0, (2.4675, 2.1365))
+add_adsorbate(bulk, 'Ir', 2.0, (2.4675, 2.1365))
 structure = AseAtomsAdaptor.get_structure(bulk)
-add_to_dict(structure, 'platinum_graphene', millers)
+add_to_dict(structure, 'Ir_graphene', millers)
 
 # Boro-nitro-graphene
 
